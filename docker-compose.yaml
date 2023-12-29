@@ -1,47 +1,13 @@
-version: '2'
+# Use root/example as user/password credentials
+version: '3.1'
 
 services:
-  spark:
-    build:
-      context: .
-      dockerfile: Dockerfile-spark
+
+  mongo:
+    image: mongo:latest
+    restart: always
     environment:
-      - SPARK_MODE=master
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
     ports:
-      - '8080:8080'
-    volumes:
-      - ".:/test-files:rw"
-  spark-worker-1:
-    build:
-      context: .
-      dockerfile: Dockerfile-spark-worker
-    environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark:7077
-      - SPARK_WORKER_MEMORY=3G
-      - SPARK_WORKER_CORES=2
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-    volumes:
-      - ".:/test-files:rw"
-  # spark-worker-2:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile-spark-worker
-  #   environment:
-  #     - SPARK_MODE=worker
-  #     - SPARK_MASTER_URL=spark://spark:7077
-  #     - SPARK_WORKER_MEMORY=1G
-  #     - SPARK_WORKER_CORES=1
-  #     - SPARK_RPC_AUTHENTICATION_ENABLED=no
-  #     - SPARK_RPC_ENCRYPTION_ENABLED=no
-  #     - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-  #     - SPARK_SSL_ENABLED=no
-  #   volumes:
-  #     - ".:/test-files:rw"
+      - 27017:27017

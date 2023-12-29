@@ -137,54 +137,54 @@ cosine_sim = count_matrix.alias("i").join(count_matrix.alias("j"), F.col("i.titl
         dot_udf("i.features", "j.features").alias("cosine_similarity")
     )
 # print(cosine_sim.count())
-cosine_sim = cosine_sim.coalesce(1)
-cosine_sim.write.json('/test-files/dataset/test', mode='overwrite')
+# cosine_sim = cosine_sim.coalesce(1)
+# cosine_sim.write.json('/test-files/dataset/test', mode='overwrite')
 
 # Reset index
-# df_2 = df_2.withColumn("index", F.monotonically_increasing_id())
+df_2 = df_2.withColumn("index", F.monotonically_increasing_id())
 
-# # Create index Series
-# indices = df_2.select("title", "index").withColumnRenamed("index", "movie_index")
+# Create index Series
+indices = df_2.select("title", "index").withColumnRenamed("index", "movie_index")
 
-# # Function to get recommendations
-# def get_recommendations(title, cosine_sim, indices):
-#     # idx = indices.filter(indices.title == title).select("movie_index").collect()[0][0]
+# Function to get recommendations
+def get_recommendations(title, cosine_sim, indices):
+    # idx = indices.filter(indices.title == title).select("movie_index").collect()[0][0]
 
-#     # Create a temporary view for cosine_sim DataFrame
-#     cosine_sim.createOrReplaceTempView("cosine_sim_view")
+    # Create a temporary view for cosine_sim DataFrame
+    cosine_sim.createOrReplaceTempView("cosine_sim_view")
 
-#     # Use Spark SQL to filter and select relevant columns
-#     query = f"""
-#         SELECT title_i, title_j, cosine_similarity
-#         FROM cosine_sim_view
-#         WHERE title_i = "{title}" OR title_j = "{title}"
-#     """ # order by cosine_similarity desc
+    # Use Spark SQL to filter and select relevant columns
+    query = f"""
+        SELECT title_i, title_j, cosine_similarity
+        FROM cosine_sim_view
+        WHERE title_i = "{title}" OR title_j = "{title}"
+    """ # order by cosine_similarity desc
     
-#     similarity_scores = spark.sql(query).rdd.flatMap(
-#         lambda row: [(row["title_i"], row["cosine_similarity"]), (row["title_j"], row["cosine_similarity"])]
-#     ).collect()
+    similarity_scores = spark.sql(query).rdd.flatMap(
+        lambda row: [(row["title_i"], row["cosine_similarity"]), (row["title_j"], row["cosine_similarity"])]
+    ).collect()
 
-#     # similarity_scores = list(set(similarity_scores))
-#     similarity_scores = list(filter(lambda pair: pair[0] != title, similarity_scores))
-#     similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
-#     similarity_scores = similarity_scores[:20]
+    # similarity_scores = list(set(similarity_scores))
+    similarity_scores = list(filter(lambda pair: pair[0] != title, similarity_scores))
+    similarity_scores = sorted(similarity_scores, key=lambda x: x[1], reverse=True)
+    similarity_scores = similarity_scores[:20]
 
-#     # # Extract movie indices
-#     # movies_indices = [ind[0] for ind in similarity_scores]
+    # # Extract movie indices
+    # movies_indices = [ind[0] for ind in similarity_scores]
 
-#     # # Get movie titles
-#     # recommended_movies = indices.filter(indices.title.isin(movies_indices)).select("title")
+    # # Get movie titles
+    # recommended_movies = indices.filter(indices.title.isin(movies_indices)).select("title")
 
-#     # return recommended_movies
-#     return spark.createDataFrame(similarity_scores, ['title', 'cosine_similarity'])
+    # return recommended_movies
+    return spark.createDataFrame(similarity_scores, ['title', 'cosine_similarity'])
 
-# # Print recommendations
-# movie = "Superman"
-# print("################ Content Based System #############")
-# print(f"Recommendations for {movie}:")
-# get_recommendations(movie, cosine_sim, indices).show(truncate=False)
+# Print recommendations
+movie = "Superman"
+print("################ Content Based System #############")
+print(f"Recommendations for {movie}:")
+get_recommendations(movie, cosine_sim, indices).show(truncate=False)
 
-# print(time.time() - start_time)
+print(time.time() - start_time)
 
 # df_2.printSchema()
 
