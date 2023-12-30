@@ -11,7 +11,7 @@ class MongoConnection:
             raise Exception("Cannot connect to mongodb")
         
         self.database = os.getenv("MONGO_DATABASE", "Recommendations_project")
-        self.page_size = os.getenv("MONGO_PAGE_SIZE", 10)
+        self.page_size = os.getenv("MONGO_PAGE_SIZE", 12)
 
         self.__connect(self.connection_url)
 
@@ -38,7 +38,7 @@ class MongoConnection:
 
         regex_pattern = re.compile(query_str, re.IGNORECASE)
 
-        fields_to_include = ["id", "title", "poster", "release_date"]
+        fields_to_include = ["id", "title", "poster", "tagline"]
         projection = { field : 1 for field in fields_to_include}
 
         query = {

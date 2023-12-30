@@ -3,33 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <title>Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        table, th, td {
-            border: 1px solid black;
-            border-collapse: collapse;
-            padding: 5px;
-        }
-    </style>
+      .card-img-overlay {
+          display: none;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.7); /* Adjust the overlay background color and transparency */
+          color: #fff; /* Text color for overlay content */
+          padding: 20px;
+          box-sizing: border-box;
+          transition: opacity 0.3s ease-in-out;
+      }
+  
+      .card:hover .card-img-overlay {
+          display: flex;
+          flex-direction: column;
+          justify-content: end;
+      }
+  </style>
 </head>
 <body>
-    <table>
-    {% for doc in documents %}
-        <tr>
-            <td> {{ doc.id }} </td>
-            <td> {{ doc.title }} </td>
-            <!-- <td> <img src="{{ doc.poster }}" alt=" {{ doc.title }}"/> </td> -->
-            <td> {{ doc.release_date }} </td>
-        </tr>
-    {% endfor %}
-    </table>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+          <!-- <a class="navbar-brand" href="#">Navbar</a> -->
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/search?query=">Search</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link position-relative" aria-current="page" href="/stage">
+                  Stage
+                  <span id="badge" class="position-absolute p-1 bg-danger border border-light rounded-circle" style="display: none;"></span>
+                </a>
+              </li>
+            </ul>
+            <form class="d-flex" role="search">
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+          </div>
+        </div>
+    </nav>
+    <div class="container w-100 h-100">
+        <div class="row row-cols-4 ">
+            {% for doc in documents %}
+            <div class="col my-3">
+                <div class="card position-relative">
+                    <img src="{{ doc.poster }}" class="card-img-top" alt="{{ doc.title }}" height="450px">
+                    <div class="card-img-overlay">
+                      <h5 class="card-title"> {{ doc.title }} </h5>
+                      <h6 class="card-subtitle">{{ doc.tagline }}</h6>
+                      <button class="btn btn-primary mt-2" type="button" onclick="addToStage(`{{ doc.title }}`)">Add to stage</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="container d-flex justify-content-center my-3">
+        <div>
+            {% if prev >= 0 and documents|length > 0 %}
+            <a href="/search?query={{ query }}&page={{ prev }}" class="btn btn-outline-secondary mx-3">Prev</a>
+            {% else %}
+            <a class="btn btn-outline-secondary disabled mx-3">Prev</a>
+            {% endif %}
+            {% if next > 0 %}
+            <a href="/search?query={{ query }}&page={{ next }}" class="btn btn-outline-secondary mx-3">Next</a>
+            {% else %}
+            <a class="btn btn-outline-secondary disabled mx-3">Next</a>
+            {% endif %}
+        </div>
+    </div>
 
-    {% if prev >= 0 and documents|length > 0 %}
-    <a href="/search?query={{ query }}&page={{ page }}"><< prev</a>
-    {% endif %}
-
-    {% if next > 0 %}
-    <a href="/search?query={{ query }}&page={{ next }}">next >></a>
-    {% endif %}
+    <div class="toast-container position-absolute top-0 end-0 mt-4">
+      <div id="stage-msg" class="toast mx-2 my-4" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+              <div id="stage-msg-body" class="toast-body flex-grow-1">{{ error_msg }}</div>
+              <button id="toast-dismiss" type="button" class="m-auto btn-close mx-2" data-dismiss="toast" aria-label="Close"></button>
+          </div>
+      </div>
+  </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+<script>
+
+let toastContent = document.querySelector("#stage-msg")
+let toastMessage = document.querySelector("#stage-msg-body")
+let dismissButton = document.querySelector("#toast-dismiss")
+let toast = new bootstrap.Toast(toastContent, { autohide: false })
+dismissButton.addEventListener('click', ()=> toast.hide())
+
+let badge = document.querySelector("#badge")
+badge.style.display = getStagedMovies().length > 0 ? 'inline': 'none'
+
+
+function getStagedMovies() {
+  let stagedMoviesStr = localStorage.getItem("staged-movies")
+  return stagedMoviesStr ? JSON.parse(stagedMoviesStr) : []
+}
+
+function addToStage(movieName) {
+  let stagedMovies = getStagedMovies()
+  console.log("adding movie to storage", stagedMovies)
+  if (stagedMovies.length >= 3) {
+    toastMessage.innerHTML = "Cannot add more than 3 movies to the stage"
+    toast.show()
+  } else {
+    if (stagedMovies.includes(movieName)) {
+      toastMessage.innerHTML = "Movie already exists in stage."
+      toast.show()
+    } else {
+      stagedMovies.push(movieName)
+      localStorage.setItem("staged-movies", JSON.stringify(stagedMovies))
+      badge.style.display = 'inline'
+    }
+  }
+}
+</script>
 </html>
