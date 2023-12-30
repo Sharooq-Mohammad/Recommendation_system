@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Query, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from typing import List
@@ -6,6 +7,7 @@ from typing import List
 from database import MongoConnection
 
 app = FastAPI(debug=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
 db_connection = MongoConnection()
