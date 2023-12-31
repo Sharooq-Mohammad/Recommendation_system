@@ -67,7 +67,7 @@ class MongoConnection:
 
         query = { "title" : { "$in": movies }}
 
-        fields_to_include = ["id", "title", "poster", "release_date"]
+        fields_to_include = ["id", "title", "poster", "tagline"]
         projection = { field : 1 for field in fields_to_include}
 
         cursor = collection.find(query, projection)
@@ -115,7 +115,7 @@ class MongoConnection:
         recommended_movies = list(movie_cosine_map.keys())
 
         query = { "title" : { "$in": recommended_movies }}
-        fields_to_include = ["id", "title", "poster", "release_date"]
+        fields_to_include = ["id", "title", "poster", "tagline"]
         projection = { field : 1 for field in fields_to_include}
 
         cursor = source_movies.find(query, projection)

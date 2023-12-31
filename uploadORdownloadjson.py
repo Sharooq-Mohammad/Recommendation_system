@@ -61,19 +61,19 @@ try:
     # with open('dataset/movies.json') as file:
     #     data = json.load(file)
 
-    # with open('../test/movies_by_cosine.json', "r") as file:
-    #     data = [json.loads(line) for line in file]
+    with open('../test/movies_by_cosine.json', "r") as file:
+        data = [json.loads(line) for line in file]
 
-    # print('started uploading')
+    print('started uploading')
 
-    # collection.insert_many(data)
+    collection.insert_many(data)
     # collection.replace_many({}, data, upsert=True)    
 
-    results = collection.find({"title_i":"Avatar"})
-    results_list = list(results)
-    print(results_list[:10])
+    # results = collection.find({"title_i":"Avatar"})
+    # results_list = list(results)
+    # print(results_list[:10])
 
-    # print(collection.count_documents({}))
+    print(collection.count_documents({}))
     # result = collection.delete_many({})
 
     print(time.time() - start)

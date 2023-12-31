@@ -4,24 +4,97 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        table, th, td {
-            border: 1px solid black;
-            border-collapse: collapse;
-            padding: 5px;
+        .card-img-overlay {
+            display: none;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); /* Adjust the overlay background color and transparency */
+            color: #fff; /* Text color for overlay content */
+            padding: 20px;
+            box-sizing: border-box;
+            transition: opacity 0.3s ease-in-out;
+        }
+    
+        .card:hover .card-img-overlay {
+            display: flex;
+            flex-direction: column;
+            justify-content: end;
         }
     </style>
 </head>
 <body>
-    <table>
-        {% for doc in documents %}
-        <tr>
-            <td> {{ doc.id }} </td>
-            <td> {{ doc.title }} </td>
-            <!-- <td> <img src="{{ doc.poster }}" alt=" {{ doc.title }}"/> </td> -->
-            <td> {{ doc.release_date }} </td>
-        </tr>
-        {% endfor %}
-    </table>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+          <!-- <a class="navbar-brand" href="#">Navbar</a> -->
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link disabled" aria-current="page" href="/search?query=">Search</a>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link position-relative" aria-current="page" onclick="goToStage(event)">
+                  Stage
+                  <span id="badge" class="position-absolute p-1 bg-danger border border-light rounded-circle" style="display: none;"></span>
+                </button>
+              </li>
+            </ul>
+            <form class="d-flex" action="/search">
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query">
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+          </div>
+        </div>
+    </nav>
+    <div class="container w-100 h-100">
+        <div class="row row-cols-4 ">
+            {% for doc in documents %}
+            <div class="col my-3">
+                <div class="card position-relative">
+                    <img src="{{ doc.poster }}" class="card-img-top" alt="{{ doc.title }}" height="450px">
+                    <div class="card-img-overlay">
+                      <h5 class="card-title"> {{ doc.title }} </h5>
+                      <h6 class="card-subtitle">{{ doc.tagline }}</h6>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+<script>
+
+function getStagedMovies() {
+  let stagedMoviesStr = localStorage.getItem("staged-movies")
+  return stagedMoviesStr ? JSON.parse(stagedMoviesStr) : []
+}
+
+function goToStage(event) {
+  let moviesStaged = getStagedMovies()
+  let href = "/stage?"
+  let params = []
+  for (let movieName of moviesStaged) {
+    if (movieName) {
+      params.push("movies=" + movieName)
+    }
+  }
+  href += params.join("&")
+  
+  let anchor = document.createElement("a")
+  anchor.href = href
+  anchor.click()
+}
+</script>
 </html>

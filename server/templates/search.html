@@ -40,17 +40,17 @@
                 <a class="nav-link" aria-current="page" href="/">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="/search?query=">Search</a>
+                <a class="nav-link active disabled" aria-current="page" href="/search?query=">Search</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link position-relative" aria-current="page" href="/stage">
+                <button class="nav-link position-relative" aria-current="page" onclick="goToStage(event)">
                   Stage
                   <span id="badge" class="position-absolute p-1 bg-danger border border-light rounded-circle" style="display: none;"></span>
-                </a>
+                </button>
               </li>
             </ul>
-            <form class="d-flex" role="search">
-              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+            <form class="d-flex" action="/search">
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="query">
               <button class="btn btn-outline-success" type="submit">Search</button>
             </form>
           </div>
@@ -65,7 +65,7 @@
                     <div class="card-img-overlay">
                       <h5 class="card-title"> {{ doc.title }} </h5>
                       <h6 class="card-subtitle">{{ doc.tagline }}</h6>
-                      <button class="btn btn-primary mt-2" type="button" onclick="addToStage(`{{ doc.title }}`)">Add to stage</button>
+                      <button class="btn btn-primary mt-2" type="button" onclick="addToStage(event, `{{ doc.title }}`)">Add to stage</button>
                     </div>
                 </div>
             </div>
@@ -115,9 +115,8 @@ function getStagedMovies() {
   return stagedMoviesStr ? JSON.parse(stagedMoviesStr) : []
 }
 
-function addToStage(movieName) {
+function addToStage(event, movieName) {
   let stagedMovies = getStagedMovies()
-  console.log("adding movie to storage", stagedMovies)
   if (stagedMovies.length >= 3) {
     toastMessage.innerHTML = "Cannot add more than 3 movies to the stage"
     toast.show()
@@ -128,9 +127,26 @@ function addToStage(movieName) {
     } else {
       stagedMovies.push(movieName)
       localStorage.setItem("staged-movies", JSON.stringify(stagedMovies))
-      badge.style.display = 'inline'
+      badge.style.display = "inline"
+      event.srcElement.className += " disabled"
     }
   }
+}
+
+function goToStage(event) {
+  let moviesStaged = getStagedMovies()
+  let href = "/stage?"
+  let params = []
+  for (let movieName of moviesStaged) {
+    if (movieName) {
+      params.push("movies=" + movieName)
+    }
+  }
+  href += params.join("&")
+  
+  let anchor = document.createElement("a")
+  anchor.href = href
+  anchor.click()
 }
 </script>
 </html>

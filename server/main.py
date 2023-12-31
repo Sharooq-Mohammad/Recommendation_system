@@ -60,8 +60,16 @@ async def staged_movies(request: Request, movies: List[str]= Query(title="movies
 
 
 @app.get("/generate")
-async def generate_recommendations(request: Request, sample1: str, sample2: str=None, sample3: str=None) -> HTMLResponse:
-    movies = [movie for movie in (sample1, sample2, sample3) if movie]
+async def generate_recommendations(request: Request, samples: List[str]=Query(title="samples", default_factory=list)) -> HTMLResponse:
+    movies = [movie for movie in samples if movie]
+
+    if len(movies) > 3:
+        err_msg = "Cannot stage more than 3 movies. Please retry again."
+        return RedirectResponse(f"/?error={err_msg}")
+    if len(movies) < 1:
+        err_msg = "Add movies to stage. Please retry again."
+        return RedirectResponse(f"/?error={err_msg}")
+    
     response = db_connection.get_recommended_movies(movies)
     response_ctx = { "documents": response }
 
